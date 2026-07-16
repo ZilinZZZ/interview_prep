@@ -22,7 +22,12 @@ const k = (id: string, suffix: string) => `ip:${id}:${suffix}`;
 
 export function loadSession(id: string): SessionState | null {
   const raw = localStorage.getItem(k(id, "session"));
-  return raw ? (JSON.parse(raw) as SessionState) : null;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as SessionState;
+  } catch {
+    return null;
+  }
 }
 export function saveSession(id: string, s: SessionState): void {
   localStorage.setItem(k(id, "session"), JSON.stringify(s));
