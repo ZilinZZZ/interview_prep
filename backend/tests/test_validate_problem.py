@@ -109,6 +109,17 @@ def test_budget_count_mismatch_reported(tmp_path):
     assert any("part_budgets_min" in e for e in errors)
 
 
+def test_budget_wrong_type_reported(tmp_path):
+    d = make_problem(tmp_path)
+    meta = (d / "meta.yaml").read_text(encoding="utf-8")
+    (d / "meta.yaml").write_text(
+        meta.replace("part_budgets_min: [10, 10]", 'part_budgets_min: "15, 15, 15"'),
+        encoding="utf-8",
+    )
+    errors = validate_problem.validate(tmp_path, "gen-demo")
+    assert any("part_budgets_min must be a list" in e for e in errors)
+
+
 def test_noncontiguous_parts_reported(tmp_path):
     d = make_problem(tmp_path)
     (d / "part-2").rename(d / "part-3")

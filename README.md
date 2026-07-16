@@ -21,7 +21,8 @@ No registration step; it appears in the list on refresh.
 
 To have Claude Code write one for you: `/generate-problem <interview>`
 (e.g. `/generate-problem affirm-practical-coding`). Check any problem folder,
-hand-written or generated, with `python scripts/validate_problem.py <id>`.
+hand-written or generated, with
+`backend\.venv\Scripts\python scripts\validate_problem.py <id>`.
 
 ## Tests
 

@@ -118,12 +118,15 @@ def validate(base: Path, problem_id: str) -> list[str]:
         errors.append("no part-N directories")
     elif parts != list(range(1, len(parts) + 1)):
         errors.append(f"part directories not contiguous from 1: {parts}")
-    if meta and isinstance(meta.get("part_budgets_min"), list):
-        if len(meta["part_budgets_min"]) != len(parts):
-            errors.append(
-                f"part_budgets_min has {len(meta['part_budgets_min'])} "
-                f"entries but there are {len(parts)} part dirs"
-            )
+    if meta and "part_budgets_min" in meta:
+        if isinstance(meta["part_budgets_min"], list):
+            if len(meta["part_budgets_min"]) != len(parts):
+                errors.append(
+                    f"part_budgets_min has {len(meta['part_budgets_min'])} "
+                    f"entries but there are {len(parts)} part dirs"
+                )
+        else:
+            errors.append("part_budgets_min must be a list")
     for n in parts:
         _check_part(d / f"part-{n}", n, errors)
     return errors

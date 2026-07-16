@@ -69,7 +69,7 @@ Content rules:
 Run from the repo root:
 
 ```
-python scripts/validate_problem.py <new-id>
+backend\.venv\Scripts\python scripts\validate_problem.py <new-id>
 ```
 
 It checks structure (meta fields, contiguous parts, budgets matching part
