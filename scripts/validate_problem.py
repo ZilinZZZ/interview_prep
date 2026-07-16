@@ -15,6 +15,10 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 
+sys.path.insert(0, str(ROOT / "backend"))
+
+from app.runner import run_tests  # noqa: E402
+
 ID_RE = re.compile(r"^[a-z0-9-]+$")
 PART_RE = re.compile(r"^part-(\d+)$")
 REQUIRED_META = [
@@ -121,4 +125,39 @@ def validate(base: Path, problem_id: str) -> list[str]:
             )
     for n in parts:
         _check_part(d / f"part-{n}", n, errors)
+    return errors
+
+
+def validate_behavior(
+    base: Path, problem_id: str, timeout_s: int = 30
+) -> list[str]:
+    """Run each part's solution (and the part-1 starter) like the app does.
+
+    Requires a structurally valid problem; call validate() first.
+    """
+    errors: list[str] = []
+    d = base / problem_id
+    for n in _part_numbers(d):
+        code = (d / f"part-{n}" / "solution.py").read_text(encoding="utf-8")
+        result = run_tests(d, code, part=n, mode="submit", timeout_s=timeout_s)
+        failed = [t["name"] for t in result["tests"] if t["outcome"] != "passed"]
+        if result["timed_out"]:
+            errors.append(f"part-{n} solution: tests timed out")
+        elif failed or result["exit_code"] != 0:
+            detail = ", ".join(failed) or result["stderr"].strip()[:200]
+            errors.append(f"part-{n} solution fails parts 1..{n} tests: {detail}")
+    starter = d / "part-1" / "starter.py"
+    if starter.is_file():
+        result = run_tests(
+            d,
+            starter.read_text(encoding="utf-8"),
+            part=1,
+            mode="submit",
+            timeout_s=timeout_s,
+        )
+        if result["exit_code"] == 0 and not result["timed_out"]:
+            errors.append(
+                "part-1 starter passes the full part-1 suite; "
+                "the starter must be imperfect"
+            )
     return errors

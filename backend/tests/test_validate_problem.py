@@ -165,3 +165,43 @@ def test_unparseable_tests_reported(tmp_path):
     (d / "part-1" / "tests.py").write_text("def broken(:\n", encoding="utf-8")
     errors = validate_problem.validate(tmp_path, "gen-demo")
     assert any("does not parse" in e for e in errors)
+
+
+def test_conformant_problem_passes_behavior(tmp_path):
+    make_problem(tmp_path)
+    assert validate_problem.validate_behavior(tmp_path, "gen-demo") == []
+
+
+def test_broken_solution_reported(tmp_path):
+    d = make_problem(tmp_path)
+    (d / "part-2" / "solution.py").write_text(
+        "def add(a, b):\n    return a - b\n", encoding="utf-8"
+    )
+    errors = validate_problem.validate_behavior(tmp_path, "gen-demo")
+    assert any("part-2 solution fails" in e for e in errors)
+
+
+def test_part1_solution_only_runs_part1_tests(tmp_path):
+    # A part-1 solution that would fail part-2 tests must still validate:
+    # behavior for part N runs tests 1..N only.
+    d = make_problem(tmp_path)
+    (d / "part-2" / "tests.py").write_text(
+        TESTS_P2.replace(
+            "from solution import add",
+            "from solution import add, sub",
+        )
+        + "\n\ndef test_sub_hidden():\n    assert sub(3, 1) == 2\n",
+        encoding="utf-8",
+    )
+    (d / "part-2" / "solution.py").write_text(
+        SOLUTION + "\n\ndef sub(a, b):\n    return a - b\n",
+        encoding="utf-8",
+    )
+    assert validate_problem.validate_behavior(tmp_path, "gen-demo") == []
+
+
+def test_starter_that_passes_everything_reported(tmp_path):
+    d = make_problem(tmp_path)
+    (d / "part-1" / "starter.py").write_text(SOLUTION, encoding="utf-8")
+    errors = validate_problem.validate_behavior(tmp_path, "gen-demo")
+    assert any("starter passes" in e for e in errors)
