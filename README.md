@@ -19,6 +19,10 @@ Make a folder under `problems/` — see
 `docs/superpowers/specs/2026-07-15-interview-platform-design.md` for the format.
 No registration step; it appears in the list on refresh.
 
+To have Claude Code write one for you: `/generate-problem <interview>`
+(e.g. `/generate-problem affirm-practical-coding`). Check any problem folder,
+hand-written or generated, with `python scripts/validate_problem.py <id>`.
+
 ## Tests
 
     npm run test:api   # backend (pytest)
