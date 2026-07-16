@@ -205,3 +205,40 @@ def test_starter_that_passes_everything_reported(tmp_path):
     (d / "part-1" / "starter.py").write_text(SOLUTION, encoding="utf-8")
     errors = validate_problem.validate_behavior(tmp_path, "gen-demo")
     assert any("starter passes" in e for e in errors)
+
+
+def test_main_ok_exit_zero(tmp_path, capsys):
+    make_problem(tmp_path)
+    rc = validate_problem.main(["gen-demo", "--problems-dir", str(tmp_path)])
+    assert rc == 0
+    assert "OK: gen-demo" in capsys.readouterr().out
+
+
+def test_main_invalid_exit_one_lists_all_errors(tmp_path, capsys):
+    d = make_problem(tmp_path)
+    (d / "part-2" / "solution.py").unlink()
+    (d / "part-1" / "starter.py").unlink()
+    rc = validate_problem.main(["gen-demo", "--problems-dir", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "INVALID: gen-demo" in out
+    assert "part-2/solution.py missing" in out
+    assert "part-1/starter.py missing" in out
+
+
+def test_main_skips_behavior_when_structure_broken(tmp_path, capsys):
+    # Structural failures must not attempt to run tests (files are missing).
+    d = make_problem(tmp_path)
+    (d / "part-1" / "tests.py").unlink()
+    rc = validate_problem.main(["gen-demo", "--problems-dir", str(tmp_path)])
+    assert rc == 1
+    assert "solution fails" not in capsys.readouterr().out
+
+
+def test_seed_problem_is_valid():
+    base = ROOT / "problems"
+    assert validate_problem.validate(base, "affirm-payment-allocator") == []
+    assert (
+        validate_problem.validate_behavior(base, "affirm-payment-allocator")
+        == []
+    )

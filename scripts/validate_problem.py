@@ -6,6 +6,7 @@ Exit 0 if valid; exit 1 with a readable list of every failed check.
 """
 from __future__ import annotations
 
+import argparse
 import ast
 import re
 import sys
@@ -161,3 +162,28 @@ def validate_behavior(
                 "the starter must be imperfect"
             )
     return errors
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Validate a problem folder (structure + behavior)."
+    )
+    parser.add_argument("problem_id")
+    parser.add_argument(
+        "--problems-dir", type=Path, default=ROOT / "problems"
+    )
+    args = parser.parse_args(argv)
+    errors = validate(args.problems_dir, args.problem_id)
+    if not errors:
+        errors = validate_behavior(args.problems_dir, args.problem_id)
+    if errors:
+        print(f"INVALID: {args.problem_id}")
+        for e in errors:
+            print(f"  - {e}")
+        return 1
+    print(f"OK: {args.problem_id}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
