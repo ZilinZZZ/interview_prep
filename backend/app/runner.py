@@ -98,7 +98,6 @@ def run_tests(
 ) -> dict:
     """Write `code` as solution.py, copy tests for parts 1..part, run pytest."""
     global _current_proc
-    cancel_current_run()
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
         workdir = Path(td)
         (workdir / "solution.py").write_text(code, encoding="utf-8")
@@ -121,6 +120,8 @@ def run_tests(
         if mode == "run":
             args += ["-m", "sample"]
         with _lock:
+            if _current_proc is not None:
+                _kill_tree(_current_proc)
             proc = subprocess.Popen(
                 args,
                 cwd=td,
