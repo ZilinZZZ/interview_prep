@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* Rendered problem statements */
+.statement {
+  line-height: 1.6;
+}
+.statement h1, .statement h2, .statement h3 {
+  font-weight: 700;
+  margin: 1em 0 0.5em;
+}
+.statement h2 { font-size: 1.25rem; }
+.statement h3 { font-size: 1.05rem; }
+.statement p, .statement ul, .statement ol { margin: 0.5em 0; }
+.statement ul { list-style: disc; padding-left: 1.5em; }
+.statement ol { list-style: decimal; padding-left: 1.5em; }
+.statement code {
+  background: #1f2937;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.statement pre {
+  background: #111827;
+  padding: 0.75em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.statement pre code { background: none; padding: 0; }
+.statement table { border-collapse: collapse; margin: 0.5em 0; }
+.statement th, .statement td { border: 1px solid #374151; padding: 0.3em 0.6em; }
