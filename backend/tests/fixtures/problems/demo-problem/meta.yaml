@@ -1,0 +1,8 @@
+id: demo-problem
+title: Demo Problem
+company: TestCo
+round: practical-coding
+language: python
+time_limit_min: 30
+part_budgets_min: [10, 10]
+tags: [demo]
