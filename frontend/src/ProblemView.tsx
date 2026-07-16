@@ -27,6 +27,12 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
   const [unlockInfo, setUnlockInfo] = useState<UnlockInfo | null>(null);
   const runSeq = useRef(0);
 
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   // fetch viewed part + part 1 (for the starter) lazily
   useEffect(() => {
     for (const n of new Set([viewedPart, 1])) {
@@ -142,6 +148,27 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
     [id],
   );
 
+  const timer = {
+    totalElapsedS: Math.floor((now - session.startedAt) / 1000),
+    totalLimitMin: meta.time_limit_min,
+    part: activePart,
+    partElapsedS: Math.floor(
+      (now - (session.partStartedAt[activePart] ?? session.startedAt)) / 1000,
+    ),
+    partBudgetMin: meta.part_budgets_min[activePart - 1] ?? meta.time_limit_min,
+  };
+
+  const codeRef = useRef(code);
+  codeRef.current = code;
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (codeRef.current !== null) {
+        void api.snapshot(id, codeRef.current);
+      }
+    }, 30_000);
+    return () => clearInterval(t);
+  }, [id]);
+
   return (
     <div className="flex h-screen flex-col">
       {unlockInfo && (
@@ -165,7 +192,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
                 content={parts[viewedPart] ?? null}
                 onSelectPart={setViewedPart}
                 onReveal={onReveal}
-                timer={null}
+                timer={timer}
               />
             </Panel>
             <Separator className="w-1 bg-gray-700 hover:bg-gray-500" />
