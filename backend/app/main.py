@@ -6,12 +6,14 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import problems, runner, sessions
 
 ROOT = Path(__file__).resolve().parents[2]  # repo root
 
 app = FastAPI(title="Interview Practice Platform")
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
 
 
 def problems_dir() -> Path:

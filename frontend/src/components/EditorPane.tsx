@@ -3,6 +3,7 @@ import { useRef } from "react";
 
 interface Props {
   code: string;
+  language: string;
   onChange: (v: string) => void;
   onRun: () => void;
   onSubmit: () => void;
@@ -10,7 +11,7 @@ interface Props {
   running: boolean;
 }
 
-export function EditorPane({ code, onChange, onRun, onSubmit, onReset, running }: Props) {
+export function EditorPane({ code, language, onChange, onRun, onSubmit, onReset, running }: Props) {
   // keep latest handlers so Monaco commands (bound once) never go stale
   const handlers = useRef({ onRun, onSubmit });
   handlers.current = { onRun, onSubmit };
@@ -52,7 +53,7 @@ export function EditorPane({ code, onChange, onRun, onSubmit, onReset, running }
       </div>
       <div className="flex-1">
         <Editor
-          language="python"
+          language={language}
           theme="vs-dark"
           value={code}
           onChange={(v) => onChange(v ?? "")}

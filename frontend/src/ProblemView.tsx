@@ -37,7 +37,10 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
   useEffect(() => {
     for (const n of new Set([viewedPart, 1])) {
       if (!parts[n]) {
-        api.getPart(id, n).then((p) => setParts((prev) => ({ ...prev, [n]: p })));
+        api
+          .getPart(id, n)
+          .then((p) => setParts((prev) => ({ ...prev, [n]: p })))
+          .catch((e) => setError(String(e)));
       }
     }
   }, [id, viewedPart, parts]);
@@ -199,6 +202,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
             <Panel minSize={30}>
               <EditorPane
                 code={code ?? "# loading…"}
+                language={meta.language}
                 onChange={onCodeChange}
                 onRun={() => doRun("run")}
                 onSubmit={() => doRun("submit")}

@@ -45,7 +45,7 @@ def list_problems(base: Path) -> list[dict]:
         return []
     out = []
     for d in sorted(base.iterdir()):
-        if d.is_dir() and (d / "meta.yaml").is_file():
+        if d.is_dir() and ID_RE.fullmatch(d.name) and (d / "meta.yaml").is_file():
             out.append(load_meta(base, d.name))
     return out
 

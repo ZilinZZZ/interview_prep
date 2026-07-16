@@ -21,6 +21,30 @@ def test_list_problems_empty_for_missing_dir(tmp_path):
     assert problems.list_problems(tmp_path / "nope") == []
 
 
+def test_list_problems_skips_misnamed_dir(tmp_path):
+    good = tmp_path / "valid-problem"
+    good.mkdir()
+    (good / "meta.yaml").write_text(
+        "id: valid-problem\ntitle: Valid Problem\ncompany: TestCo\n"
+        "round: practical-coding\nlanguage: python\ntime_limit_min: 30\n"
+        "part_budgets_min: [10]\ntags: [demo]\n",
+        encoding="utf-8",
+    )
+
+    bad = tmp_path / "Bad Name"
+    bad.mkdir()
+    (bad / "meta.yaml").write_text(
+        "id: bad-name\ntitle: Bad Name\ncompany: TestCo\n"
+        "round: practical-coding\nlanguage: python\ntime_limit_min: 30\n"
+        "part_budgets_min: [10]\ntags: [demo]\n",
+        encoding="utf-8",
+    )
+
+    result = problems.list_problems(tmp_path)
+    assert len(result) == 1
+    assert result[0]["id"] == "valid-problem"
+
+
 def test_problem_dir_rejects_path_traversal():
     for bad in ["../evil", "demo-problem/../../etc", "a/b", "UPPER", "demo problem", ""]:
         with pytest.raises(problems.ProblemNotFound):

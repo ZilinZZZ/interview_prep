@@ -13,7 +13,7 @@ FIXTURES = Path(__file__).parent / "fixtures" / "problems"
 def client(monkeypatch, tmp_path):
     monkeypatch.setenv("PROBLEMS_DIR", str(FIXTURES))
     monkeypatch.setenv("SESSIONS_DIR", str(tmp_path / "sessions"))
-    return TestClient(app)
+    return TestClient(app, base_url="http://127.0.0.1")
 
 
 def test_list_problems(client):
