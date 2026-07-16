@@ -4,5 +4,5 @@ company: Dev
 round: scratch
 language: python
 time_limit_min: 10
-part_budgets_min: [10]
+part_budgets_min: [10, 10]
 tags: [scratch]

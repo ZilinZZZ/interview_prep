@@ -7,6 +7,7 @@ import type { PartContent, ProblemMeta, RunResponse } from "./types";
 import { EditorPane } from "./components/EditorPane";
 import { ProblemPane } from "./components/ProblemPane";
 import { ResultsPane } from "./components/ResultsPane";
+import { UnlockPanel, type UnlockInfo } from "./components/UnlockPanel";
 
 export function ProblemView({ meta }: { meta: ProblemMeta }) {
   const id = meta.id;
@@ -23,6 +24,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState(() => store.loadNotes(id));
+  const [unlockInfo, setUnlockInfo] = useState<UnlockInfo | null>(null);
   const runSeq = useRef(0);
 
   // fetch viewed part + part 1 (for the starter) lazily
@@ -72,7 +74,17 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
         if (seq !== runSeq.current) return; // stale — a newer run superseded us
         setResults(resp);
         if (mode === "submit" && allGreen(resp)) {
-          // unlock flow lands in Task 8
+          const elapsedPartS = clientStats(session, activePart, Date.now()).elapsed_part_s;
+          setUnlockInfo({ part: activePart, resp, elapsedPartS });
+          if (activePart < meta.num_parts) {
+            store.saveBuffer(id, activePart + 1, code); // carry forward
+            setSession((s) => ({
+              ...s,
+              unlockedPart: activePart + 1,
+              partStartedAt: { ...s.partStartedAt, [activePart + 1]: Date.now() },
+            }));
+            setViewedPart(activePart + 1);
+          }
         }
       } catch (e) {
         if (seq === runSeq.current) setError(String(e));
@@ -92,6 +104,36 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
     }
   }, [id, activePart, starter]);
 
+  const onReveal = useCallback(
+    (nextPart: number) => {
+      if (
+        !window.confirm(
+          `Reveal Part ${nextPart} without passing Part ${activePart}? ` +
+            `Part ${activePart} will be logged as skipped.`,
+        )
+      )
+        return;
+      if (code !== null) store.saveBuffer(id, nextPart, code);
+      setSession((s) => ({
+        ...s,
+        unlockedPart: nextPart,
+        skippedParts: [...new Set([...s.skippedParts, activePart])],
+        partStartedAt: { ...s.partStartedAt, [nextPart]: Date.now() },
+      }));
+      setViewedPart(nextPart);
+    },
+    [id, code, activePart],
+  );
+
+  // when the active part changes (unlock/reveal), load that part's buffer
+  const prevPart = useRef(activePart);
+  useEffect(() => {
+    if (prevPart.current !== activePart) {
+      prevPart.current = activePart;
+      setCode(resolveBuffer(activePart, (p) => store.loadBuffer(id, p), starter ?? ""));
+    }
+  }, [activePart, id, starter]);
+
   const onNotesChange = useCallback(
     (v: string) => {
       setNotes(v);
@@ -102,6 +144,9 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
 
   return (
     <div className="flex h-screen flex-col">
+      {unlockInfo && (
+        <UnlockPanel info={unlockInfo} meta={meta} onClose={() => setUnlockInfo(null)} />
+      )}
       <header className="flex items-center gap-4 border-b border-gray-700 px-4 py-2">
         <a href="#/" className="text-sm text-gray-400 hover:text-gray-200">
           ← Problems
@@ -119,7 +164,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
                 unlockedPart={session.unlockedPart}
                 content={parts[viewedPart] ?? null}
                 onSelectPart={setViewedPart}
-                onReveal={() => {}}
+                onReveal={onReveal}
                 timer={null}
               />
             </Panel>
