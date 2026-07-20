@@ -187,7 +187,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
       <Group orientation="vertical" className="flex-1">
         <Panel defaultSize={70} minSize={30}>
           <Group orientation="horizontal">
-            <Panel defaultSize={40} minSize={20}>
+            <Panel defaultSize={50} minSize={20}>
               <ProblemPane
                 meta={meta}
                 viewedPart={viewedPart}
@@ -199,7 +199,7 @@ export function ProblemView({ meta }: { meta: ProblemMeta }) {
               />
             </Panel>
             <Separator className="w-1 bg-gray-700 hover:bg-gray-500" />
-            <Panel minSize={30}>
+            <Panel defaultSize={50} minSize={20}>
               <EditorPane
                 code={code ?? "# loading…"}
                 language={meta.language}
